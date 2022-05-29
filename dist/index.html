@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="/index.07e1dc89.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300" rel="stylesheet" type="text/css">
+    <script src="/index.61382918.js" defer=""></script>
+  </head>
+  <body>
+    <div id="container">
+      <header id="header">OpenWeather App</header>
+      <div id="locationSearch">
+        <label for="search">Enter Location City:
+          <input type="text" id="search">
+        </label>
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="main">
+        <div id="currentWeather">
+          <div id="cityName">City Name</div>
+          <div id="curTemp">Current Temp:</div>
+          <div id="weather_curTemp"></div>
+          <div id="maxTemp">Max Temp:</div>
+          <div id="weather_maxTemp"></div>
+          <div id="minTemp">Min Temp:</div>
+          <div id="weather_minTemp"></div>
+          <div id="weatherType">Weather Type:</div>
+          <div id="weather_type"></div>
+        </div>
+        <div id="forecast">
+          <div>5 Day Forecast</div>
+          <table id="forecastTable">
+            <tr>
+              <th class="tableHeader">Day</th>
+              <th class="tableHeader">Max Temp</th>
+              <th class="tableHeader">Min Temp</th>
+              <th class="tableHeader">Weather Type</th>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
