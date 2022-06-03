@@ -1,3 +1,4 @@
+import { fetchWeather } from "./api/openweather.js";
 import { setBackground } from "./weather.js";
 
 const cityName = document.querySelector("#cityName");
@@ -15,16 +16,13 @@ let prevSearch = "chaska";
 let degToggle = "imperial";
 let errorToggle = false;
 
+function convertToDegrees(temp) {
+  return `${Math.round(temp)}°`;
+}
+
 async function getWeather(search, units) {
   try {
-    const response = await fetch(
-      "https://api.openweathermap.org/data/2.5/weather?q=" +
-        search +
-        "&APPID=f61f77ea54a19b239b2b3d5c6aae0dc8&units=" +
-        units,
-      { mode: "cors" }
-    );
-    const weather = await response.json();
+    const weather = await fetchWeather();
     console.log(weather);
 
     cityName.textContent = weather.name;
