@@ -1,5 +1,6 @@
-import { fetchWeather } from "./api/openweather.js";
+import { fetchWeatherCurrent, fetchWeatherDay } from "./api/openweather.js";
 import { setBackground } from "./weather.js";
+import { main } from "./main.js";
 
 const cityName = document.querySelector("#cityName");
 const currentTemp = document.querySelector("#weather_curTemp");
@@ -16,44 +17,27 @@ let prevSearch = "chaska";
 let degToggle = "imperial";
 let errorToggle = false;
 
-function convertToDegrees(temp) {
-  return `${Math.round(temp)}°`;
-}
+// console.log(config[prevSearch]);
 
 async function getWeather(search, units) {
   try {
-    const weather = await fetchWeather();
-    console.log(weather);
-
+    const weather = await fetchWeatherCurrent(search, units);
     cityName.textContent = weather.name;
-    currentTemp.textContent = `${Math.round(weather.main.temp)}°`;
-    maxTemp.textContent = `${Math.round(weather.main.temp_max)}°`;
-    minTemp.textContent = `${Math.round(weather.main.temp_min)}°`;
+    currentTemp.textContent = roundTemp(weather.main.temp);
+    maxTemp.textContent = roundTemp(weather.main.temp_max);
+    minTemp.textContent = roundTemp(weather.main.temp_min);
     weatherType.textContent = weather.weather[0].main;
     setBackground(weather.weather[0].id);
   } catch (error) {
     console.log(error);
-    cityName.textContent = "City Name";
-    currentTemp.textContent = ``;
-    maxTemp.textContent = ``;
-    minTemp.textContent = ``;
-    weatherType.textContent = "";
+    resetText();
     setBackground("0");
   }
 }
 
 async function getDayForecast(search, units) {
   try {
-    const forecastResponse = await fetch(
-      "https://api.openweathermap.org/data/2.5/forecast?q=" +
-        search +
-        "&APPID=f61f77ea54a19b239b2b3d5c6aae0dc8&units=" +
-        units +
-        "&cnt=5",
-      { mode: "cors" }
-    );
-    const forecast = await forecastResponse.json();
-    console.log(forecast);
+    const forecast = await fetchWeatherDay(search, units);
 
     let tableRows = fiveDayTable.getElementsByTagName("tr");
 
@@ -72,8 +56,8 @@ async function getDayForecast(search, units) {
 
       getDayofWeek(i);
       dayCell.textContent = dayName;
-      maxCell.textContent = `${Math.round(forecast.list[i].main.temp_max)}°`;
-      minCell.textContent = `${Math.round(forecast.list[i].main.temp_min)}°`;
+      maxCell.textContent = roundTemp(forecast.list[i].main.temp_max);
+      minCell.textContent = roundTemp(forecast.list[i].main.temp_min);
       typeCell.textContent = forecast.list[i].weather[0].main;
 
       tableRow.appendChild(dayCell);
@@ -169,6 +153,18 @@ function updateFooter() {
     footer.textContent = "OpenWeather App by @khintz34";
     footer.classList.remove("red");
   }
+}
+
+function roundTemp(temp) {
+  return `${Math.round(temp)}°`;
+}
+
+function resetText() {
+  cityName.textContent = "City Name";
+  currentTemp.textContent = ``;
+  maxTemp.textContent = ``;
+  minTemp.textContent = ``;
+  weatherType.textContent = "";
 }
 
 window.onload = () => {

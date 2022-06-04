@@ -21,25 +21,49 @@ header {
   padding-top: 6vh;
 }
 
+#container {
+  height: 90vh;
+}
+
+#btnHold {
+  width: 100%;
+  text-align: center;
+  padding-top: 6vh;
+  font-size: 0;
+}
+
+#searchBtn {
+  width: 60px;
+}
+
 #main {
   width: 100vw;
   height: 50vh;
   text-align: center;
   flex-direction: row;
   justify-content: center;
-  padding-top: 9vh;
+  padding-top: 6vh;
   display: flex;
 }
 
 #currentWeather {
-  width: 50vw;
+  width: 30vw;
+  border: 1px solid #000;
+  border-radius: 10px;
   grid-template-columns: 150px 150px;
   justify-content: center;
+  margin-left: 5vw;
+  margin-right: 5vw;
+  padding-top: 3ch;
   display: grid;
 }
 
+#currentWeather > div {
+  min-height: 40px;
+}
+
 #forecast {
-  width: 50vw;
+  width: 60vw;
   flex-direction: column;
   gap: 5vh;
   display: flex;
@@ -47,6 +71,13 @@ header {
 
 #cityName {
   grid-column: 1 / 3;
+  font-size: larger;
+  text-decoration: underline;
+}
+
+#fiveDay {
+  font-size: larger;
+  text-decoration: underline;
 }
 
 th {
@@ -55,6 +86,71 @@ th {
 
 tr > td {
   padding-top: 20px;
+}
+
+.degBtn {
+  width: 50px;
+  margin: 0;
+  font-size: 14px;
+}
+
+#fBtn {
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+}
+
+#cBtn {
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+}
+
+.btnClicked {
+  background-color: red;
+}
+
+#footer {
+  height: 7vh;
+  width: 100%;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 3vh;
+  position: absolute;
+  bottom: 0;
+}
+
+.clear {
+  background-image: url("clear.3514afde.jpeg");
+}
+
+.clouds {
+  background-image: url("clouds.36aac4d3.jpeg");
+}
+
+.snow {
+  background-image: url("snow.922b65f4.jpeg");
+}
+
+.rain {
+  background-image: url("rain.b0ecf166.jpeg");
+}
+
+.storm {
+  background-image: url("storm.3de0ed1e.jpeg");
+}
+
+.severe {
+  background-image: url("severe.0bd1a00e.jpeg");
+}
+
+.overflow {
+  background-position: center;
+  background-size: cover;
+  overflow: hidden;
+}
+
+.red {
+  color: #fff;
+  background-color: red;
 }
 
 /*# sourceMappingURL=index.07e1dc89.css.map */

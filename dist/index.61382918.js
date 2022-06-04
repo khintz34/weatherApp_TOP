@@ -503,6 +503,9 @@ function hmrAcceptRun(bundle, id) {
 }
 
 },{}],"fYlWN":[function(require,module,exports) {
+var _openweatherJs = require("./api/openweather.js");
+var _weatherJs = require("./weather.js");
+var _mainJs = require("./main.js");
 const cityName = document.querySelector("#cityName");
 const currentTemp = document.querySelector("#weather_curTemp");
 const maxTemp = document.querySelector("#weather_maxTemp");
@@ -511,32 +514,31 @@ const weatherType = document.querySelector("#weather_type");
 const fiveDayTable = document.querySelector("#forecastTable");
 const searchBtn = document.querySelector("#searchBtn");
 const search = document.querySelector("#search");
+const fBtn = document.querySelector("#fBtn");
+const cBtn = document.querySelector("#cBtn");
 let dayName;
-async function getWeather(search1) {
+let prevSearch = "chaska";
+let degToggle = "imperial";
+let errorToggle = false;
+// console.log(config[prevSearch]);
+async function getWeather(search1, units) {
     try {
-        const response = await fetch("https://api.openweathermap.org/data/2.5/weather?q=" + search1 + "&APPID=f61f77ea54a19b239b2b3d5c6aae0dc8&units=imperial", {
-            mode: "cors"
-        });
-        const weather = await response.json();
-        console.log(weather);
+        const weather = await (0, _openweatherJs.fetchWeatherCurrent)(search1, units);
         cityName.textContent = weather.name;
-        currentTemp.textContent = weather.main.temp;
-        maxTemp.textContent = weather.main.temp_max;
-        minTemp.textContent = weather.main.temp_min;
-        let testWeather = weather.weather[0].id;
-        console.log(testWeather);
+        currentTemp.textContent = roundTemp(weather.main.temp);
+        maxTemp.textContent = roundTemp(weather.main.temp_max);
+        minTemp.textContent = roundTemp(weather.main.temp_min);
         weatherType.textContent = weather.weather[0].main;
+        (0, _weatherJs.setBackground)(weather.weather[0].id);
     } catch (error) {
-        console.log("ERROR");
+        console.log(error);
+        resetText();
+        (0, _weatherJs.setBackground)("0");
     }
 }
-async function getDayForecast(search2) {
+async function getDayForecast(search2, units) {
     try {
-        const forecastResponse = await fetch("https://api.openweathermap.org/data/2.5/forecast?q=" + search2 + "&APPID=f61f77ea54a19b239b2b3d5c6aae0dc8&units=imperial&cnt=5", {
-            mode: "cors"
-        });
-        const forecast = await forecastResponse.json();
-        console.log(forecast);
+        const forecast = await (0, _openweatherJs.fetchWeatherDay)(search2, units);
         let tableRows = fiveDayTable.getElementsByTagName("tr");
         if (fiveDayTable.rows.length > 5) for(let r = fiveDayTable.rows.length - 1; r > 0; r--)fiveDayTable.removeChild(tableRows[r]);
         for(let i = 0; i < 5; i++){
@@ -547,17 +549,21 @@ async function getDayForecast(search2) {
             const typeCell = document.createElement("td");
             getDayofWeek(i);
             dayCell.textContent = dayName;
-            maxCell.textContent = forecast.list[i].main.temp_max;
-            minCell.textContent = forecast.list[i].main.temp_min;
+            maxCell.textContent = roundTemp(forecast.list[i].main.temp_max);
+            minCell.textContent = roundTemp(forecast.list[i].main.temp_min);
             typeCell.textContent = forecast.list[i].weather[0].main;
             tableRow.appendChild(dayCell);
             tableRow.appendChild(maxCell);
             tableRow.appendChild(minCell);
             tableRow.appendChild(typeCell);
             fiveDayTable.appendChild(tableRow);
+            errorToggle = false;
+            updateFooter();
         }
     } catch (error) {
-        console.log("ERROR");
+        errorToggle = true;
+        updateFooter();
+        (0, _weatherJs.setBackground)("0");
     }
 }
 function getDayofWeek(num) {
@@ -594,14 +600,170 @@ function getDayofWeek(num) {
 }
 searchBtn.onclick = ()=>{
     const value = search.value;
-    getWeather(value);
-    getDayForecast(value);
+    if (value === "") {
+        getWeather(prevSearch, degToggle);
+        getDayForecast(prevSearch, degToggle);
+    } else {
+        prevSearch = search.value;
+        getWeather(value, degToggle);
+        getDayForecast(value, degToggle);
+    }
 };
+fBtn.onclick = ()=>{
+    fBtn.classList.add("btnClicked");
+    cBtn.classList.remove("btnClicked");
+    getWeather(prevSearch, "imperial");
+    getDayForecast(prevSearch, "imperial");
+    degToggle = "imperial";
+};
+cBtn.onclick = ()=>{
+    cBtn.classList.add("btnClicked");
+    fBtn.classList.remove("btnClicked");
+    getWeather(prevSearch, "metric");
+    getDayForecast(prevSearch, "metric");
+    degToggle = "metric";
+};
+function updateFooter() {
+    const footer = document.querySelector("#footer");
+    if (errorToggle) {
+        footer.classList.add("red");
+        footer.textContent = "There was an error! Are you sure you spelled the city right??";
+    } else {
+        footer.textContent = "OpenWeather App by @khintz34";
+        footer.classList.remove("red");
+    }
+}
+function roundTemp(temp) {
+    return `${Math.round(temp)}°`;
+}
+function resetText() {
+    cityName.textContent = "City Name";
+    currentTemp.textContent = ``;
+    maxTemp.textContent = ``;
+    minTemp.textContent = ``;
+    weatherType.textContent = "";
+}
 window.onload = ()=>{
-    console.log(getWeather("Oconomowoc"));
-    console.log(getDayForecast("Oconomowoc"));
+    console.log(getWeather("Chaska", "imperial"));
+    console.log(getDayForecast("Chaska", "imperial"));
 };
 
-},{}]},["cZ3CG","fYlWN"], "fYlWN", "parcelRequire94c2")
+},{"./api/openweather.js":"bvuy2","./weather.js":"lMGXV","./main.js":"30nbG"}],"bvuy2":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "fetchWeatherCurrent", ()=>fetchWeatherCurrent);
+parcelHelpers.export(exports, "fetchWeatherDay", ()=>fetchWeatherDay);
+const BASE_URL_CURRENT = "https://api.openweathermap.org/data/2.5/weather";
+const BASE_URL_DAY = "https://api.openweathermap.org/data/2.5/forecast";
+const APP_ID = "f61f77ea54a19b239b2b3d5c6aae0dc8";
+function buildUrl(search, units, num) {
+    if (num === 1) return `${BASE_URL_CURRENT}?q=${search}&APPID=${APP_ID}&units=${units}`;
+    else if (num === 2) return `${BASE_URL_DAY}?q=${search}&APPID=${APP_ID}&units=${units}&cnt=5`;
+}
+async function fetchWeatherCurrent(search, units) {
+    const response = await fetch(buildUrl(search, units, 1), {
+        mode: "cors"
+    });
+    return response.json();
+}
+async function fetchWeatherDay(search, units) {
+    const forecastResponse = await fetch(buildUrl(search, units, 2), {
+        mode: "cors"
+    });
+    return forecastResponse.json();
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"lMGXV":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "setBackground", ()=>setBackground);
+function setBackground(weather) {
+    const container = document.querySelector("#container");
+    container.classList.add("overflow");
+    container.classList.remove("clear");
+    container.classList.remove("clouds");
+    container.classList.remove("rain");
+    container.classList.remove("snow");
+    container.classList.remove("storm");
+    container.classList.remove("severe");
+    if (weather === 800) container.classList.add("clear");
+    else if (weather > 800) container.classList.add("clouds");
+    else if (weather >= 600 && weather <= 622) container.classList.add("snow");
+    else if (weather >= 300 && weather <= 531 || weather === 701) container.classList.add("rain");
+    else if (weather >= 200 && weather <= 290) container.classList.add("storm");
+    else if (weather >= 711 && weather <= 790) container.classList.add("clouds");
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"30nbG":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "main", ()=>main);
+var _utilsJs = require("./utils.js");
+function main() {
+    const elementIds = [
+        "cityName",
+        "weather_curTemp",
+        "weather_maxTemp"
+    ];
+    const config = (0, _utilsJs.getInitialConfig)();
+    const htmlReferences = (0, _utilsJs.getElementReferences)(elementIds);
+    return {
+        config
+    };
+}
+main();
+
+},{"./utils.js":"36BQa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"36BQa":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getElementReferences", ()=>getElementReferences);
+parcelHelpers.export(exports, "getInitialConfig", ()=>getInitialConfig);
+function getElementReferences(idSelectors) {
+    const references = {};
+    idSelectors.forEach((selector)=>{
+        references[selector] = document.querySelector(`#${selector}`);
+    });
+    return references;
+}
+function getInitialConfig() {
+    return {
+        dayName: null,
+        prevSearch: "chaska",
+        degToggle: "imperial",
+        errorToggle: false
+    };
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["cZ3CG","fYlWN"], "fYlWN", "parcelRequire94c2")
 
 //# sourceMappingURL=index.61382918.js.map
