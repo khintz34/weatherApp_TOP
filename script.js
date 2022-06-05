@@ -1,25 +1,16 @@
 import { fetchWeatherCurrent, fetchWeatherDay } from "./api/openweather.js";
 import { setBackground } from "./weather.js";
-import { main } from "./main.js";
 
-const cityName = document.querySelector("#cityName");
-const currentTemp = document.querySelector("#weather_curTemp");
-const maxTemp = document.querySelector("#weather_maxTemp");
-const minTemp = document.querySelector("#weather_minTemp");
-const weatherType = document.querySelector("#weather_type");
-const fiveDayTable = document.querySelector("#forecastTable");
-const searchBtn = document.querySelector("#searchBtn");
-const search = document.querySelector("#search");
-const fBtn = document.querySelector("#fBtn");
-const cBtn = document.querySelector("#cBtn");
-let dayName;
-let prevSearch = "chaska";
-let degToggle = "imperial";
-let errorToggle = false;
-
-// console.log(config[prevSearch]);
-
-async function getWeather(search, units) {
+export async function getWeather(
+  search,
+  units,
+  cityName,
+  currentTemp,
+  maxTemp,
+  minTemp,
+  weatherType,
+  errorToggle
+) {
   try {
     const weather = await fetchWeatherCurrent(search, units);
     cityName.textContent = weather.name;
@@ -28,22 +19,37 @@ async function getWeather(search, units) {
     minTemp.textContent = roundTemp(weather.main.temp_min);
     weatherType.textContent = weather.weather[0].main;
     setBackground(weather.weather[0].id);
+    errorToggle = true;
   } catch (error) {
     console.log(error);
-    resetText();
+    errorToggle = false;
+
+    //not sure how else to get these variables here
+    let cityName = document.querySelector("#cityName");
+    let currentTemp = document.querySelector("#weather_curTemp");
+    let maxTemp = document.querySelector("#weather_maxTemp");
+    let minTemp = document.querySelector("#weather_minTemp");
+    let weatherType = document.querySelector("#weather_type");
+    resetText(cityName, currentTemp, maxTemp, minTemp, weatherType);
     setBackground("0");
   }
 }
 
-async function getDayForecast(search, units) {
+export async function getDayForecast(
+  search,
+  units,
+  forecastTable,
+  errorToggle,
+  dayName
+) {
   try {
     const forecast = await fetchWeatherDay(search, units);
 
-    let tableRows = fiveDayTable.getElementsByTagName("tr");
+    let tableRows = forecastTable.getElementsByTagName("tr");
 
-    if (fiveDayTable.rows.length > 5) {
-      for (let r = fiveDayTable.rows.length - 1; r > 0; r--) {
-        fiveDayTable.removeChild(tableRows[r]);
+    if (forecastTable.rows.length > 5) {
+      for (let r = forecastTable.rows.length - 1; r > 0; r--) {
+        forecastTable.removeChild(tableRows[r]);
       }
     }
 
@@ -54,7 +60,7 @@ async function getDayForecast(search, units) {
       const minCell = document.createElement("td");
       const typeCell = document.createElement("td");
 
-      getDayofWeek(i);
+      getDayofWeek(i, dayName);
       dayCell.textContent = dayName;
       maxCell.textContent = roundTemp(forecast.list[i].main.temp_max);
       minCell.textContent = roundTemp(forecast.list[i].main.temp_min);
@@ -64,18 +70,18 @@ async function getDayForecast(search, units) {
       tableRow.appendChild(maxCell);
       tableRow.appendChild(minCell);
       tableRow.appendChild(typeCell);
-      fiveDayTable.appendChild(tableRow);
+      forecastTable.appendChild(tableRow);
       errorToggle = false;
       updateFooter();
     }
   } catch (error) {
     errorToggle = true;
-    updateFooter();
+    updateFooter(errorToggle);
     setBackground("0");
   }
 }
 
-function getDayofWeek(num) {
+export function getDayofWeek(num, dayName) {
   let date = new Date();
   const dayNum = date.getDay() + 1;
   let totalNum;
@@ -114,36 +120,110 @@ function getDayofWeek(num) {
   }
 }
 
-searchBtn.onclick = () => {
-  const value = search.value;
+export function searchForCity(
+  cityName,
+  currentTemp,
+  maxTemp,
+  minTemp,
+  weatherType,
+  forecastTable,
+  errorToggle,
+  degToggle,
+  prevSearch,
+  dayName,
+  search
+) {
+  const value = search;
 
   if (value === "") {
-    getWeather(prevSearch, degToggle);
-    getDayForecast(prevSearch, degToggle);
+    getWeather(
+      prevSearch,
+      degToggle,
+      cityName,
+      currentTemp,
+      maxTemp,
+      minTemp,
+      weatherType,
+      errorToggle
+    );
+    getDayForecast(prevSearch, degToggle, forecastTable, errorToggle, dayName);
   } else {
     prevSearch = search.value;
-    getWeather(value, degToggle);
-    getDayForecast(value, degToggle);
+    getWeather(
+      value,
+      degToggle,
+      cityName,
+      currentTemp,
+      maxTemp,
+      minTemp,
+      weatherType,
+      errorToggle
+    );
+    getDayForecast(value, degToggle, forecastTable, errorToggle, dayName);
   }
-};
+}
 
-fBtn.onclick = () => {
+export function fareClick(
+  cBtn,
+  fBtn,
+  cityName,
+  currentTemp,
+  maxTemp,
+  minTemp,
+  weatherType,
+  forecastTable,
+  errorToggle,
+  degToggle,
+  prevSearch,
+  dayName
+) {
   fBtn.classList.add("btnClicked");
   cBtn.classList.remove("btnClicked");
-  getWeather(prevSearch, "imperial");
-  getDayForecast(prevSearch, "imperial");
+  getWeather(
+    prevSearch,
+    "imperial",
+    cityName,
+    currentTemp,
+    maxTemp,
+    minTemp,
+    weatherType,
+    errorToggle
+  );
+  getDayForecast(prevSearch, "imperial", forecastTable, errorToggle, dayName);
   degToggle = "imperial";
-};
+}
 
-cBtn.onclick = () => {
+export function celciusClick(
+  cBtn,
+  fBtn,
+  cityName,
+  currentTemp,
+  maxTemp,
+  minTemp,
+  weatherType,
+  forecastTable,
+  errorToggle,
+  degToggle,
+  prevSearch,
+  dayName
+) {
   cBtn.classList.add("btnClicked");
   fBtn.classList.remove("btnClicked");
-  getWeather(prevSearch, "metric");
-  getDayForecast(prevSearch, "metric");
+  getWeather(
+    prevSearch,
+    "metric",
+    cityName,
+    currentTemp,
+    maxTemp,
+    minTemp,
+    weatherType,
+    errorToggle
+  );
+  getDayForecast(prevSearch, "metric", forecastTable, errorToggle, dayName);
   degToggle = "metric";
-};
+}
 
-function updateFooter() {
+function updateFooter(errorToggle) {
   const footer = document.querySelector("#footer");
   if (errorToggle) {
     footer.classList.add("red");
@@ -155,11 +235,11 @@ function updateFooter() {
   }
 }
 
-function roundTemp(temp) {
+export function roundTemp(temp) {
   return `${Math.round(temp)}°`;
 }
 
-function resetText() {
+function resetText(cityName, currentTemp, maxTemp, minTemp, weatherType) {
   cityName.textContent = "City Name";
   currentTemp.textContent = ``;
   maxTemp.textContent = ``;
@@ -167,7 +247,30 @@ function resetText() {
   weatherType.textContent = "";
 }
 
-window.onload = () => {
-  console.log(getWeather("Chaska", "imperial"));
-  console.log(getDayForecast("Chaska", "imperial"));
-};
+export function initWeather(
+  search,
+  units,
+  cityName,
+  currentTemp,
+  maxTemp,
+  minTemp,
+  weatherType,
+  forecastTable,
+  errorToggle,
+  dayName
+) {
+  console.log(
+    getWeather(
+      search,
+      units,
+      cityName,
+      currentTemp,
+      maxTemp,
+      minTemp,
+      weatherType
+    )
+  );
+  console.log(
+    getDayForecast(search, units, forecastTable, errorToggle, dayName)
+  );
+}
